@@ -36,7 +36,7 @@ def search_secret():
     params = {
     "isAsc": True,  # Set to True for ascending order, False for descending order
     "secretName": secret_name,
-    "pageNum": 1,  # Page number for pagination
+    "pageNum": 0,  # Page number for pagination
     "rowPerPage": 100,  # Number of rows per page
     }
 
@@ -44,10 +44,10 @@ def search_secret():
 
     if response.status_code ==200:
         data = response.json()
-        print(data)
+
         for detail in data['operation']['Details']:
             if detail['secretname'] == secret_name:
-                return detail['\'secretid\'']
+                return detail['secretid']
         return 'Secret not found.'
 
     else:
@@ -96,5 +96,4 @@ def access_control():
         print(response.text)  # Print the error message or failure reason
 
 
-# access_control()
-print(search_secret())
+access_control()
