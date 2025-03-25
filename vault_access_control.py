@@ -57,8 +57,8 @@ def access_control():
     url = 'https://vault.zoho.com/api/rest/json/v1/accesscontrol/settings'
 
     # Define variables for all the data fields
-    approver_ids = ['2022000045633067', '2022000000011003','2022000040235009']  # List of admin user auto IDs
-    excluded_user_ids = ['2022000068658001', '2022000113751001']  # List of user auto IDs to be excluded from access control workflow
+    approver_ids = ['2709000000015005']  # List of admin user auto IDs
+    excluded_user_ids = ['2709000000010001']  # List of user auto IDs to be excluded from access control workflow
     dual_approval = False  # Whether dual approval is required (True/False)
     request_timeout = "48"  # Timeout for requests (in hours)
     checkout_timeout = "30"  # Timeout for checking out passwords (in minutes)
