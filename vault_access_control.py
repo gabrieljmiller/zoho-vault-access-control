@@ -29,9 +29,29 @@ headers = {
     'Authorization': f'Bearer {refresh_access()}'
 }
 
-def search_secret():
+def get_user_id(username):
+    url = 'https://vault.zoho.com/api/rest/json/v1/user'
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    for user in data['operation']['Details']:
+        if user['username'] == username:
+            return user['user_auto_id']
+    return None
+
+def get_user_ids_from_input(input_users):
+    usernames = [username.strip() for username in input_users.split(",")]
+    user_ids = []
+    for username in usernames:
+        user_id = get_user_id(username)
+        if user_id:
+            user_ids.append(user_id)
+        else:
+            print(f"User '{username}' not found.")
+    return user_ids
+
+def search_secret(secret_name):
     url = 'https://vault.zoho.com/api/rest/json/v1/secrets'
-    secret_name = input('Enter secret name: ')
 
     params = {
     "isAsc": True,  # Set to True for ascending order, False for descending order
@@ -63,7 +83,7 @@ def access_control():
     request_timeout = "48"  # Timeout for requests (in hours)
     checkout_timeout = "30"  # Timeout for checking out passwords (in minutes)
     auto_approve = False  # Whether automatic approval is enabled (True/False)
-    secret_ids = [search_secret()]  # List of secret IDs to manage
+    secret_ids = [search_secret(input('enter secret name:'))]  # List of secret IDs to manage
 
     # Construct the INPUT_DATA dictionary
     input_data = {
@@ -95,5 +115,3 @@ def access_control():
         print(f"Request failed with status code {response.status_code}")
         print(response.text)  # Print the error message or failure reason
 
-
-access_control()
