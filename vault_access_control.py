@@ -42,12 +42,20 @@ def get_user_id(username):
 def get_user_ids_from_input(input_users):
     usernames = [username.strip() for username in input_users.split(",")]
     user_ids = []
+    
     for username in usernames:
         user_id = get_user_id(username)
-        if user_id:
-            user_ids.append(user_id)
-        else:
+        
+        # Check if the user_id is found
+        while not user_id:
             print(f"User '{username}' not found.")
+            # Ask the user to correct the username
+            username = input("Please enter a valid username: ").strip()
+            user_id = get_user_id(username)
+        
+        # Append the valid user_id to the list
+        user_ids.append(user_id)
+    
     return user_ids
 
 def search_secret(secret_name):
