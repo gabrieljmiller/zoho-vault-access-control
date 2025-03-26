@@ -29,9 +29,29 @@ headers = {
     'Authorization': f'Bearer {refresh_access()}'
 }
 
-def search_secret():
+def get_user_id(username):
+    url = 'https://vault.zoho.com/api/rest/json/v1/user'
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    for user in data['operation']['Details']:
+        if user['username'] == username:
+            return user['user_auto_id']
+    return None
+
+def get_user_ids_from_input(input_users):
+    usernames = [username.strip() for username in input_users.split(",")]
+    user_ids = []
+    for username in usernames:
+        user_id = get_user_id(username)
+        if user_id:
+            user_ids.append(user_id)
+        else:
+            print(f"User '{username}' not found.")
+    return user_ids
+
+def search_secret(secret_name):
     url = 'https://vault.zoho.com/api/rest/json/v1/secrets'
-    secret_name = input('Enter secret name: ')
 
     params = {
     "isAsc": True,  # Set to True for ascending order, False for descending order
@@ -53,17 +73,14 @@ def search_secret():
     else:
         print(f"Error {response.status_code}: {response.text}")
 
-def access_control():
+def access_control(approver_ids, excluded_user_ids, secret_ids):
     url = 'https://vault.zoho.com/api/rest/json/v1/accesscontrol/settings'
 
     # Define variables for all the data fields
-    approver_ids = ['2022000045633067', '2022000000011003','2022000040235009']  # List of admin user auto IDs
-    excluded_user_ids = ['2022000068658001', '2022000113751001']  # List of user auto IDs to be excluded from access control workflow
     dual_approval = False  # Whether dual approval is required (True/False)
     request_timeout = "48"  # Timeout for requests (in hours)
     checkout_timeout = "30"  # Timeout for checking out passwords (in minutes)
     auto_approve = False  # Whether automatic approval is enabled (True/False)
-    secret_ids = [search_secret()]  # List of secret IDs to manage
 
     # Construct the INPUT_DATA dictionary
     input_data = {
@@ -95,5 +112,9 @@ def access_control():
         print(f"Request failed with status code {response.status_code}")
         print(response.text)  # Print the error message or failure reason
 
+secret_id = search_secret(input("Enter the secret name: "))
+approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
+excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
+secret_ids = [secret_id]
 
-access_control()
+access_control(approver_ids, excluded_user_ids, secret_ids)
