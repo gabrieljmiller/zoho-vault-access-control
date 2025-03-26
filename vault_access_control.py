@@ -73,17 +73,14 @@ def search_secret(secret_name):
     else:
         print(f"Error {response.status_code}: {response.text}")
 
-def access_control():
+def access_control(approver_ids, excluded_user_ids, secret_ids):
     url = 'https://vault.zoho.com/api/rest/json/v1/accesscontrol/settings'
 
     # Define variables for all the data fields
-    approver_ids = ['2709000000015005']  # List of admin user auto IDs
-    excluded_user_ids = ['2709000000010001']  # List of user auto IDs to be excluded from access control workflow
     dual_approval = False  # Whether dual approval is required (True/False)
     request_timeout = "48"  # Timeout for requests (in hours)
     checkout_timeout = "30"  # Timeout for checking out passwords (in minutes)
     auto_approve = False  # Whether automatic approval is enabled (True/False)
-    secret_ids = [search_secret(input('enter secret name:'))]  # List of secret IDs to manage
 
     # Construct the INPUT_DATA dictionary
     input_data = {
@@ -115,3 +112,9 @@ def access_control():
         print(f"Request failed with status code {response.status_code}")
         print(response.text)  # Print the error message or failure reason
 
+secret_id = search_secret(input("Enter the secret name: "))
+approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
+excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
+secret_ids = [secret_id]
+
+access_control(approver_ids, excluded_user_ids, secret_ids)
