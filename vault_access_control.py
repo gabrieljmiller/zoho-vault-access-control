@@ -120,9 +120,55 @@ def access_control(approver_ids, excluded_user_ids, secret_ids):
         print(f"Request failed with status code {response.status_code}")
         print(response.text)  # Print the error message or failure reason
 
-secret_id = search_secret(input("Enter the secret name: "))
+def search_chambers(chamber_name):
+    url = 'https://vault.zoho.com/api/rest/json/v1/chambers'
+    params = {
+        "isAsc": True,
+        "pageNum": 0,
+        "rowPerPage": 100,
+        "chamberName": chamber_name
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+    
+    if response.status_code ==200:
+        data = response.json()
+
+        for detail in data['operation']['Details']:
+            if detail['chambername'] == chamber_name:
+                return detail['chamberid']
+        return 'Chamber not found.'
+    else:
+        print(f"Error {response.status_code}: {response.text}")
+
+def get_chamber_secrets(chamber_id):
+    url = f'https://vault.zoho.com/api/rest/json/v1/chambers/{chamber_id}'
+    secret_ids = []
+
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code ==200:
+        data = response.json()
+
+        for secret in data['operation']['Details']['chambersecrets']:
+            secret_ids.append(secret['secretid'])
+        return secret_ids
+    else:
+        print(f"Error {response.status_code}: {response.text}")
+
+secret_or_folder = input("Edit access for a secret (1) or a folder (2)?: ")
+
+if secret_or_folder == "1":
+    secret_id = search_secret(input("Enter the secret name: "))
+    secret_ids = [secret_id]
+elif secret_or_folder == '2':
+    chamber_id = search_chambers(input("Enter the folder name: "))
+    secret_ids = get_chamber_secrets(chamber_id)
+else:
+    print("Invalid input. Please enter 1 or 2.")
+    exit()
+
 approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
 excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
-secret_ids = [secret_id]
 
 access_control(approver_ids, excluded_user_ids, secret_ids)
