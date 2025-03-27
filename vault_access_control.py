@@ -141,9 +141,27 @@ def search_chambers(chamber_name):
     else:
         print(f"Error {response.status_code}: {response.text}")
 
-secret_id = search_secret(input("Enter the secret name: "))
-approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
-excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
-secret_ids = [secret_id]
+def get_chamber_secrets(chamber_id):
+    url = f'https://vault.zoho.com/api/rest/json/v1/chambers/{chamber_id}'
+    secret_ids = []
 
-access_control(approver_ids, excluded_user_ids, secret_ids)
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code ==200:
+        data = response.json()
+
+        for secret in data['operation']['Details']['chambersecrets']:
+            secret_ids.append(secret['secretid'])
+        return secret_ids
+    else:
+        print(f"Error {response.status_code}: {response.text}")
+
+# secret_id = search_secret(input("Enter the secret name: "))
+# approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
+# excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
+# secret_ids = [secret_id]
+
+# access_control(approver_ids, excluded_user_ids, secret_ids)
+
+chamber_id = search_chambers(input("Enter the chamber name: "))
+print(get_chamber_secrets(chamber_id))
