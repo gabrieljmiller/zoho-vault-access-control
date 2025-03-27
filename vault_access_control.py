@@ -156,12 +156,19 @@ def get_chamber_secrets(chamber_id):
     else:
         print(f"Error {response.status_code}: {response.text}")
 
-# secret_id = search_secret(input("Enter the secret name: "))
-# approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
-# excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
-# secret_ids = [secret_id]
+secret_or_folder = input("Edit access for a secret (1) or a folder (2)?: ")
 
-# access_control(approver_ids, excluded_user_ids, secret_ids)
+if secret_or_folder == "1":
+    secret_id = search_secret(input("Enter the secret name: "))
+    secret_ids = [secret_id]
+elif secret_or_folder == '2':
+    chamber_id = search_chambers(input("Enter the folder name: "))
+    secret_ids = get_chamber_secrets(chamber_id)
+else:
+    print("Invalid input. Please enter 1 or 2.")
+    exit()
 
-chamber_id = search_chambers(input("Enter the chamber name: "))
-print(get_chamber_secrets(chamber_id))
+approver_ids = get_user_ids_from_input(input("Enter the approver usernames: "))
+excluded_user_ids = get_user_ids_from_input(input("Enter the excluded usernames: "))
+
+access_control(approver_ids, excluded_user_ids, secret_ids)
