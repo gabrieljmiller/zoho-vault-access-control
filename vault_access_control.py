@@ -40,18 +40,30 @@ def get_user_id(username):
     return None
 
 def get_user_ids_from_input(input_users):
+    # Load alias mappings
+    alias_file = 'vault_aliases.json'
+    aliases = {}
+    if os.path.exists(alias_file):
+        with open(alias_file, 'r') as file:
+            try:
+                aliases = json.load(file)
+            except json.JSONDecodeError:
+                print("Warning: Could not decode alias file. Starting without aliases.")
+
     usernames = [username.strip() for username in input_users.split(",")]
     user_ids = []
-    
-    for username in usernames:
-        user_id = get_user_id(username)
+
+    for input_name in usernames:
+        # Resolve alias if it exists
+        resolved_name = aliases.get(input_name, input_name)
+        user_id = get_user_id(resolved_name)
 
         while not user_id:
-            print(f"User '{username}' not found.")
-            add = input(f"Would you like to add '{username}' as an alias? (yes/no): ").strip().lower()
+            print(f"User '{input_name}' (resolved as '{resolved_name}') not found.")
+            add = input(f"Would you like to add '{input_name}' as an alias? (yes/no): ").strip().lower()
             
             if add in ['yes', 'y']:
-                correct_username = input(f"Enter the correct Zoho username for alias '{username}': ").strip()
+                correct_username = input(f"Enter the correct Zoho username for alias '{input_name}': ").strip()
                 user_id = get_user_id(correct_username)
 
                 while not user_id:
@@ -59,21 +71,23 @@ def get_user_ids_from_input(input_users):
                     correct_username = input("Please enter a valid Zoho username: ").strip()
                     user_id = get_user_id(correct_username)
 
-                add_alias(username, correct_username)
-                username = correct_username  # Update for final user_id list
+                add_alias(input_name, correct_username)
+                resolved_name = correct_username  # for consistency
+                break  # valid user_id obtained
 
             else:
-                username = input("Enter the correct Zoho username: ").strip()
-                user_id = get_user_id(username)
+                resolved_name = input("Enter the correct Zoho username: ").strip()
+                user_id = get_user_id(resolved_name)
 
                 while not user_id:
-                    print(f"Username '{username}' still not found.")
-                    username = input("Please enter a valid Zoho username: ").strip()
-                    user_id = get_user_id(username)
+                    print(f"Username '{resolved_name}' still not found.")
+                    resolved_name = input("Please enter a valid Zoho username: ").strip()
+                    user_id = get_user_id(resolved_name)
 
         user_ids.append(user_id)
 
     return user_ids
+
 
 def search_secret(secret_name):
     url = 'https://vault.zoho.com/api/rest/json/v1/secrets'
@@ -173,26 +187,27 @@ def get_chamber_secrets(chamber_id):
     else:
         print(f"Error {response.status_code}: {response.text}")
 
-def add_alias(alias,username):
+def add_alias(alias, username):
     aliases = {}
-    filename = 'vault-aliases.json'
+    filename = 'vault_aliases.json'
 
-    # Check if the file exists
+    # Load existing aliases if the file exists
     if os.path.exists(filename):
         with open(filename, 'r') as file:
             try:
                 aliases = json.load(file)
             except json.JSONDecodeError:
-                print("Error decoding JSON. Starting with an empty dictionary.")
+                print("Warning: Could not decode existing alias file. Starting fresh.")
 
-    aliases[username] = alias
+    # Store alias -> actual username
+    aliases[alias] = username
 
-    # Write the updated dictionary back to the file
+    # Write updated aliases to file
     with open(filename, 'w') as file:
         json.dump(aliases, file, indent=4)
-    
-    # Print the updated dictionary
-    print(f"Alias for '{username}' set to '{alias}' in {filename}")
+
+    print(f"Alias '{alias}' saved for username '{username}' in {filename}")
+
 
 secret_or_folder = input("Edit access for a secret (1) or a folder (2)?: ")
 
