@@ -156,6 +156,27 @@ def get_chamber_secrets(chamber_id):
     else:
         print(f"Error {response.status_code}: {response.text}")
 
+def add_alias(alias,username):
+    aliases = {}
+    filename = 'vault-aliases.json'
+
+    # Check if the file exists
+    if os.path.exists(filename):
+        with open(filename, 'r') as file:
+            try:
+                aliases = json.load(file)
+            except json.JSONDecodeError:
+                print("Error decoding JSON. Starting with an empty dictionary.")
+
+    aliases[username] = alias
+
+    # Write the updated dictionary back to the file
+    with open(filename, 'w') as file:
+        json.dump(aliases, file, indent=4)
+    
+    # Print the updated dictionary
+    print(f"Alias for '{username}' set to '{alias}' in {filename}")
+
 secret_or_folder = input("Edit access for a secret (1) or a folder (2)?: ")
 
 if secret_or_folder == "1":
