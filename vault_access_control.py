@@ -45,17 +45,34 @@ def get_user_ids_from_input(input_users):
     
     for username in usernames:
         user_id = get_user_id(username)
-        
-        # Check if the user_id is found
+
         while not user_id:
             print(f"User '{username}' not found.")
-            # Ask the user to correct the username
-            username = input("Please enter a valid username: ").strip()
-            user_id = get_user_id(username)
-        
-        # Append the valid user_id to the list
+            add = input(f"Would you like to add '{username}' as an alias? (yes/no): ").strip().lower()
+            
+            if add in ['yes', 'y']:
+                correct_username = input(f"Enter the correct Zoho username for alias '{username}': ").strip()
+                user_id = get_user_id(correct_username)
+
+                while not user_id:
+                    print(f"Username '{correct_username}' still not found.")
+                    correct_username = input("Please enter a valid Zoho username: ").strip()
+                    user_id = get_user_id(correct_username)
+
+                add_alias(username, correct_username)
+                username = correct_username  # Update for final user_id list
+
+            else:
+                username = input("Enter the correct Zoho username: ").strip()
+                user_id = get_user_id(username)
+
+                while not user_id:
+                    print(f"Username '{username}' still not found.")
+                    username = input("Please enter a valid Zoho username: ").strip()
+                    user_id = get_user_id(username)
+
         user_ids.append(user_id)
-    
+
     return user_ids
 
 def search_secret(secret_name):
