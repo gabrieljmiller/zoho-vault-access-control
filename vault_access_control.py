@@ -14,11 +14,7 @@ def refresh_access():
     'refresh_token': os.getenv('REFRESH_TOKEN'),
     'grant_type': 'refresh_token'}
 
-    headers = {
-    'Cookie': '_zcsr_tmp=d1de3962-273c-41e1-8d94-2178ec816d75; iamcsr=d1de3962-273c-41e1-8d94-2178ec816d75; zalb_b266a5bf57=a711b6da0e6cbadb5e254290f114a026'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", url, data=payload)
     data = response.json()
     access_token = data["access_token"]
 
